@@ -16,5 +16,8 @@
 </dependency>
 
 
-
+create test2.sh file
+touch /tmp/output/1.csv
+javac Testing.java
+java Testing /tmp/output /Downloads/confidential.csv /Downloads/nonConfidential.csv
 
