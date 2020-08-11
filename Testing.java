@@ -116,7 +116,7 @@ public class Testing {
 	         }
 	         
 	         stmt =  con.createStatement();
-	         
+	         //CREATING CONFIDENTIAL TABLE  FOR STORING VALUES FROM 2 CSV FILES
 	         String createst="CREATE TABLE confidential_table( ID VARCHAR(100), \n" + 
 	         		"Isconfidential VARCHAR(100),\n" + 
 	         		" ProjectName VARCHAR(100), \n" + 
@@ -151,31 +151,12 @@ public class Testing {
 			 * rs.next(); int rowCount = rs.getInt(1); System.out.println(rowCount);
 			 */     
 	         
+	            //QUERY1---How many LEED projects are there in Virginia (including all types of project types
+	            //and versions of LEED)?
 	            String query1="SELECT count(*) from "
 	            		+ "(select LEEDSystemVersionDisplayName FROM confidential_table "
 	            		+ " where State='Virginia' or State = 'VA'"
 	            		+ "group by LEEDSystemVersionDisplayName)";
-	            		
-	            
-	            String query2="SELECT count(*) from"
-	            		+ "(select OwnerTypes from confidential_table"
-	            		+ " where State='Virginia' or State = 'VA'"
-	            		+ " group by OwnerTypes)";
-	            		
-	            String query3="select GrossSqFoot from confidential_table"
-	            		+ " where (State='Virginia' or State = 'VA') and CertLevel='Certified'";
-	            
-	            String query4="select Zipcode , count(Zipcode) from  confidential_table "
-	            		+ "where State='Virginia' or State='VA' "
-	            		+ "group by Zipcode "
-	            		+ "order by Count(Zipcode) desc "
-	            		+ "limit 2 "; 
-	            
-	            String query5_1= "select PointsAchieved  from confidential_table "
-	            		+ "where (State='Virginia' or State = 'VA') and LEEDSystemVersionDisplayName='LEED-NC 2.2'";
-	            
-	            String query5_2=" select PointsAchieved  from confidential_table"
-	            		+ " where (State='California' or State='CA') and LEEDSystemVersionDisplayName='LEED-NC 2.2'";
 	            
 	            ResultSet rs1=stmt.executeQuery(query1);
 	            rs1.next();
@@ -184,15 +165,26 @@ public class Testing {
 	            String[] d1= {Integer.toString(rs1.getInt(1))};
 	            writingToCsv(args[0]+"1.csv",s1,d1);
 	           
+	            
+	            //QUERY2---What is the number of LEED projects in Virginia by owner type?
+	            String query2="SELECT count(*) from"
+	            		+ "(select OwnerTypes from confidential_table"
+	            		+ " where State='Virginia' or State = 'VA'"
+	            		+ " group by OwnerTypes)";
+	           
 	            ResultSet rs2=stmt.executeQuery(query2);
 	            rs2.next();
 	            System.out.println("answer 2 = "+rs2.getInt(1));
 	            String[] s2= {"No. of LEED Projects ownerTypes in Virginia"};
-	            String[] d2= {Integer.toString(rs2.getInt(1))};
-	           
+	            String[] d2= {Integer.toString(rs2.getInt(1))};           
 	            writingToCsv(args[0]+"2.csv", s2,d2);
  
 	            
+	            //QUERY3---What is the total Gross Square Feet of building space that is LEED-certified in
+	           //Virginia? 		
+	            String query3="select GrossSqFoot from confidential_table"
+	            		+ " where (State='Virginia' or State = 'VA') and CertLevel='Certified'";
+	           
 	            float sum= 0;
 	            ResultSet rs3=stmt.executeQuery(query3);
 	            rs3.next();
@@ -211,19 +203,34 @@ public class Testing {
 	            System.out.println("answer 3 = "+sum);
 	            String[] s3= {"Total GrossSqFoot"};
 	            String[] d3= {Float.toString(sum)};
-	           
 	            writingToCsv(args[0]+"3.csv", s3,d3);
 
-	           
+	            
+	            //QUERY4---What Zip Code in Virginia has the highest number of projects?
+	            String query4="select Zipcode , count(Zipcode) from  confidential_table "
+	            		+ "where State='Virginia' or State='VA' "
+	            		+ "group by Zipcode "
+	            		+ "order by Count(Zipcode) desc "
+	            		+ "limit 2 "; 
+	           		           
 	            ResultSet rs4=stmt.executeQuery(query4);
 	            rs4.next();
 	            System.out.println("answer 4 = "+rs4.getString(1)+"---value is "+rs4.getInt(2));
 	            String[] s4= {"Zipcode","NO of Projects"};
 	            String[] d4= {rs4.getString(1),Integer.toString(rs4.getInt(2))};
-	           
 	            writingToCsv(args[0]+"4.csv", s4,d4);
 	           
-	           
+	            
+	            //QUERY5---Is there a significant difference (use a t-test) in the points achieved for projects in
+	            //Virginia compared to California for LEED NC 2.2?
+	            
+	            String query5_1= "select PointsAchieved  from confidential_table "
+	            		+ "where (State='Virginia' or State = 'VA') and LEEDSystemVersionDisplayName='LEED-NC 2.2'";
+	            
+	            String query5_2=" select PointsAchieved  from confidential_table"
+	            		+ " where (State='California' or State='CA') and LEEDSystemVersionDisplayName='LEED-NC 2.2'";
+	            
+	            //STORING POINTSACHIEVED VALUES OF VIRGINIA IN DOUBLE ARRAY
 	            ResultSet rs5_1=stmt.executeQuery(query5_1);
 	            rs5_1.next();
 	            int i = 0;  
@@ -240,6 +247,7 @@ public class Testing {
 	            	} 
 	            System.out.println("value of i "+i);
 	            
+	            //STORING POINTSACHIEVED VALUES OF CALIFORNIA IN DOUBLE ARRAY
 	            i=0;
 	            ResultSet rs5_2=stmt.executeQuery(query5_2);
 			    double ar2[]=new double[1200];  
@@ -255,7 +263,7 @@ public class Testing {
 	            	}  
 
 	            System.out.println("value of i "+i);
-	            TTest test = new TTest();
+	            TTest test = new TTest();//TTEST BY INCLUDING APACHE COMMON LIBRARY
 	            String nullhyp,infer;
 	            double p= test.tTest(ar1,ar2);
 	            System.out.println("value of p is  : "+p);
